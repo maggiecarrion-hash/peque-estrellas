@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PequeEstrellas - Plataforma Infantil</title>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            font-family: 'Varela Round', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #app-container {
+            width: 94%;
+            max-width: 820px;
+            height: 90vh;
+            background: #ffffff;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            border: 8px solid #ffffff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .pantalla {
+            display: none;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 25px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-y: auto;
+            background: #fdfdfd;
+        }
+        .pantalla.activa { display: flex; }
+        .header-principal h1 { color: #ff5252; font-size: 2.8rem; margin: 0; text-align: center; }
+        .header-principal p { color: #636e72; font-size: 1.2rem; text-align: center; margin-top: 5px; }
+        .quichua-sub { color: #00b894; font-weight: bold; font-style: italic; }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 550px;
+            margin-top: 20px;
+        }
+        .menu-card {
+            border-radius: 30px;
+            padding: 25px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+        }
+        .menu-card:hover { transform: scale(1.05); }
+        .card-colores { background: linear-gradient(135deg, #ff7675, #d63031); }
+        .card-cuentos { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); color: #2d3436 !important; }
+        .card-trazos { background: linear-gradient(135deg, #55efc4, #00b894); }
+        .card-numeros { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+        .menu-card .icono { font-size: 3rem; display: block; margin-bottom: 8px; }
+        .menu-card h2 { margin: 0; font-size: 1.5rem; }
+        .q-tag { display: inline-block; background: rgba(255,255,255,0.3); padding: 3px 10px; border-radius: 12px; font-size: 0.9rem; margin-top: 8px; font-weight: bold; }
+
+        .top-bar { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .top-bar h2 { color: #2d3436; margin: 0; font-size: 1.5rem; }
+        .btn-volver { background-color: #dfe6e9; border: none; padding: 10px 18px; border-radius: 15px; font-family: 'Varela Round', sans-serif; font-weight: bold; cursor: pointer; }
+
+        .game-box, .content-box {
+            background: #f1f2f6;
+            width: 100%;
+            max-width: 580px;
+            padding: 25px;
+            border-radius: 30px;
+            text-align: center;
+        }
+        #instruction, .content-box h3 { color: #2d3436; font-size: 1.3rem; margin-bottom: 5px; }
+        .quichua-label { color: #00b894; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; }
+
+        .colors-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; justify-items: center; }
+        .color-box {
+            width: 130px; height: 110px; border-radius: 25px; cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px;
+        }
+        .color-box span { background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; color: #2d3436; }
+
+        .cuento-img-container { font-size: 4rem; background: white; width: 90px; height: 90px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .content-box p { color: #636e72; font-size: 1.05rem; line-height: 1.4; }
+        .texto-quichua { color: #00b894 !important; font-weight: bold; font-style: italic; }
+        .cuento-controles { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .btn-ctrl { background: #fdcb6e; border: none; padding: 8px 15px; border-radius: 12px; font-family: 'Varela Round', sans-serif; font-weight: bold; cursor: pointer; }
+
+        .paleta-trazos { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .btn-color { width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+        .canvas-wrapper { background: white; border: 3px dashed #74b9ff; border-radius: 20px; display: inline-block; cursor: crosshair; }
+        canvas { display: block; touch-action: none; }
+        .btn-borrar { background: #ff7675; color: white; border: none; padding: 8px 15px; border-radius: 12px; font-family: 'Varela Round', sans-serif; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        .estrellas-box { font-size: 3rem; margin: 10px 0; }
+        .numeros-grid { display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
+        .num-card-btn {
+            background: #0984e3; color: white; border: none; width: 75px; height: 70px; border-radius: 18px;
+            font-size: 1.3rem; font-family: 'Varela Round', sans-serif; font-weight: bold; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .num-card-btn span { font-size: 0.75rem; font-weight: normal; }
+        #feedback, #feedback-num { font-size: 1.2rem; font-weight: bold; margin-top: 15px; min-height: 30px; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- MENÚ PRINCIPAL -->
+        <div id="pantalla-menu" class="pantalla activa">
+            <header class="header-principal">
+                <h1>🌟 PequeEstrellas 🌟</h1>
+                <p>¡Explora, juega y aprende! <span class="quichua-sub">Yachajungapaj shamuy</span></p>
+            </header>
+            <div class="menu-grid">
+                <div class="menu-card card-colores" onclick="abrirSeccion('pantalla-colores')">
+                    <span class="icono">🎨</span><h2>Colores</h2><span class="q-tag">Tullpukuna</span>
+                </div>
+                <div class="menu-card card-cuentos" onclick="abrirSeccion('pantalla-cuentos')">
+                    <span class="icono">📖</span><h2>Cuentos</h2><span class="q-tag">Eshikuna</span>
+                </div>
+                <div class="menu-card card-trazos" onclick="abrirSeccion('pantalla-trazos')">
+                    <span class="icono">✏️</span><h2>Trazos</h2><span class="q-tag">Killqaykatik</span>
+                </div>
+                <div class="menu-card card-numeros" onclick="abrirSeccion('pantalla-numeros')">
+                    <span class="icono">🔢</span><h2>Números</h2><span class="q-tag">Yupakuna</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLORES -->
+        <div id="pantalla-colores" class="pantalla">
+            <div class="top-bar">
+                <button class="btn-volver" onclick="abrirSeccion('pantalla-menu')">🏠 Menú</button>
+                <h2>🎨 Colores</h2>
+            </div>
+            <div class="game-box">
+                <h3 id="instruction">¿Dónde está el color <span id="target-color">ROJO</span>?</h3>
+                <p class="quichua-label">Maypitax <span id="target-quichua">PUYTU</span> tullpu kan?</p>
+                <div class="colors-grid">
+                    <div class="color-box" style="background-color: #ff4757;" onclick="verificarRespuesta('rojo')"><span>Puytu (Rojo)</span></div>
+                    <div class="color-box" style="background-color: #2ed573;" onclick="verificarRespuesta('verde')"><span>Waylla (Verde)</span></div>
+                    <div class="color-box" style="background-color: #1e90ff;" onclick="verificarRespuesta('azul')"><span>Tiyuj (Azul)</span></div>
+                    <div class="color-box" style="background-color: #ffa502;" onclick="verificarRespuesta('amarillo')"><span>Killu (Amarillo)</span></div>
+                </div>
+                <p id="feedback"></p>
+            </div>
+        </div>
+
+        <!-- CUENTOS -->
+        <div id="pantalla-cuentos" class="pantalla">
+            <div class="top-bar">
+                <button class="btn-volver" onclick="abrirSeccion('pantalla-menu')">🏠 Menú</button>
+                <h2>📖 Cuentos</h2>
+            </div>
+            <div class="content-box">
+                <div id="cuento-ilustracion" class="cuento-img-container">🐑</div>
+                <h3 id="cuento-titulo">1. La ovejita Lana</h3>
+                <p id="cuento-texto">La ovejita Lana vivía en una pradera verde y feliz. Le encantaba saltar y jugar con las mariposas de colores.</p>
+                <p id="cuento-quichua" class="texto-quichua">Lana uvejita sumak waylla pampapimi kawsarka.</p>
+                <div class="cuento-controles">
+                    <button class="btn-ctrl" onclick="cambiarCuento(-1)">⬅️ Anterior</button>
+                    <span id="cuento-contador">1 / 5</span>
+                    <button class="btn-ctrl" onclick="cambiarCuento(1)">Siguiente ➡️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRAZOS -->
+        <div id="pantalla-trazos" class="pantalla">
+            <div class="top-bar">
+                <button class="btn-volver" onclick="abrirSeccion('pantalla-menu')">🏠 Menú</button>
+                <h2>✏️ Trazos</h2>
+            </div>
+            <div class="content-box">
+                <h3>¡Elige un color y dibuja libremente!</h3>
+                <div class="paleta-trazos">
+                    <button class="btn-color" style="background: #ff4757;" onclick="cambiarColorPincel('#ff4757')"></button>
+                    <button class="btn-color" style="background: #1e90ff;" onclick="cambiarColorPincel('#1e90ff')"></button>
+                    <button class="btn-color" style="background: #2ed573;" onclick="cambiarColorPincel('#2ed573')"></button>
+                    <button class="btn-color" style="background: #ffa502;" onclick="cambiarColorPincel('#ffa502')"></button>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="pizarra" width="440" height="190"></canvas>
+                </div>
+                <br>
+                <button class="btn-borrar" onclick="limpiarPizarra()">🗑️ Borrar</button>
+            </div>
+        </div>
+
+        <!-- NÚMEROS -->
+        <div id="pantalla-numeros" class="pantalla">
+            <div class="top-bar">
+                <button class="btn-volver" onclick="abrirSeccion('pantalla-menu')">🏠 Menú</button>
+                <h2>🔢 Números</h2>
+            </div>
+            <div class="game-box">
+                <h3>¿Cuántas estrellas ves?</h3>
+                <p class="quichua-label">Mashna chaskakunatata rikunkanki?</p>
+                <div id="estrellas-display" class="estrellas-box">⭐⭐⭐</div>
+                <div class="numeros-grid">
+                    <button class="num-card-btn" onclick="verificarNumero(1)">1 <span>Shuk</span></button>
+                    <button class="num-card-btn" onclick="verificarNumero(2)">2 <span>Iskay</span></button>
+                    <button class="num-card-btn" onclick="verificarNumero(3)">3 <span>Kimsa</span></button>
+                </div>
+                <p id="feedback-num"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirSeccion(idPantalla) {
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+            document.getElementById(idPantalla).classList.add('activa');
+            if (idPantalla === 'pantalla-colores') nuevaRondaColores();
+            if (idPantalla === 'pantalla-numeros') nuevaRondaNumeros();
+            if (idPantalla === 'pantalla-trazos') setTimeout(inicializarCanvas, 50);
+        }
+
+        // Colores
+        let colores = [
+            { es: 'rojo', q: 'Puytu', visual: 'ROJO' },
+            { es: 'verde', q: 'Waylla', visual: 'VERDE' },
+            { es: 'azul', q: 'Tiyuj', visual: 'AZUL' },
+            { es: 'amarillo', q: 'Killu', visual: 'AMARILLO' }
+        ];
+        let colorActual = {};
+        let bloqueadoColores = false;
+
+        function nuevaRondaColores() {
+            bloqueadoColores = false;
+            colorActual = colores[Math.floor(Math.random() * colores.length)];
+            document.getElementById('target-color').innerText = colorActual.visual;
+            document.getElementById('target-quichua').innerText = colorActual.q.toUpperCase();
+            document.getElementById('feedback').innerText = '';
+        }
+
+        function verificarRespuesta(sel) {
+            if (bloqueadoColores) return;
+            let fb = document.getElementById('feedback');
+            if (sel === colorActual.es) {
+                bloqueadoColores = true;
+                fb.style.color = '#00b894';
+                fb.innerText = '🎉 ¡Allillanchmi! ¡Lo lograste! 🌟';
+                setTimeout(nuevaRondaColores, 1500);
+            } else {
+                fb.style.color = '#ff7675';
+                fb.innerText = '❌ ¡Inténtalo de nuevo!';
+            }
+        }
+
+        // Cuentos
+        let cuentos = [
+            { icono: '🐑', t: '1. La ovejita Lana', txt: 'La ovejita Lana vivía en una pradera verde y feliz jugando con las mariposas.', q: 'Lana uvejita sumak waylla pampapimi kawsarka.' },
+            { icono: '🐻', t: '2. El osito goloso', txt: 'El osito Bastián salió a buscar miel en el bosque encantado y compartió con todos.', q: 'Bastián ositoka sachapi mishki maskamurka.' },
+            { icono: '🐱', t: '3. Michi el gato', txt: 'Michi era un tierno gatito que amaba dormir sobre mantas tibias y correr alegremente.', q: 'Michi mishitu chiri punllakunapi kupa armaj karka.' },
+            { icono: '🌟', t: '4. La estrellita', txt: 'Una pequeña estrella fugaz bajó despacito a saludar a los niños brillando con fuerza.', q: 'Shuk uchilla chaskaka kay pacha rikuriyta munarka.' },
+            { icono: '🐸', t: '5. Sapo Pepe', txt: 'Sapo Pepe cantaba canciones divertidas junto al agua cristalina con sus amigos peces.', q: 'Pepe sapuka yakupi sumak takikunata takirka.' }
+        ];
+        let idxCuento = 0;
+
+        function cambiarCuento(dir) {
+            idxCuento += dir;
+            if (idxCuento < 0) idxCuento = cuentos.length - 1;
+            if (idxCuento >= cuentos.length) idxCuento = 0;
+            let c = cuentos[idxCuento];
+            document.getElementById('cuento-ilustracion').innerText = c.icono;
+            document.getElementById('cuento-titulo').innerText = c.t;
+            document.getElementById('cuento-texto').innerText = c.txt;
+            document.getElementById('cuento-quichua').innerText = c.q;
+            document.getElementById('cuento-contador').innerText = `${idxCuento + 1} / 5`;
+        }
+
+        // Trazos
+        let colorPincel = '#0984e3';
+        function cambiarColorPincel(c) { colorPincel = c; }
+
+        function inicializarCanvas() {
+            let canvas = document.getElementById('pizarra');
+            if (!canvas) return;
+            let ctx = canvas.getContext('2d');
+            let dibujando = false;
+            ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.strokeStyle = colorPincel;
+
+            let nuevoC = canvas.cloneNode(true);
+            canvas.parentNode.replaceChild(nuevoC, canvas);
+            let cvs = document.getElementById('pizarra');
+            let cx = cvs.getContext('2d');
+            cx.lineWidth = 6; cx.lineCap = 'round'; cx.strokeStyle = colorPincel;
+
+            function pos(e) {
+                let rect = cvs.getBoundingClientRect();
+                let x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                let y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                return { x: x - rect.left, y: y - rect.top };
+            }
+
+            cvs.addEventListener('mousedown', e => { dibujando = true; cx.strokeStyle = colorPincel; let p = pos(e); cx.beginPath(); cx.moveTo(p.x, p.y); });
+            cvs.addEventListener('mousemove', e => { if (!dibujando) return; let p = pos(e); cx.lineTo(p.x, p.y); cx.stroke(); });
+            cvs.addEventListener('mouseup', () => dibujando = false);
+            cvs.addEventListener('mouseleave', () => dibujando = false);
+
+            cvs.addEventListener('touchstart', e => { dibujando = true; cx.strokeStyle = colorPincel; let p = pos(e); cx.beginPath(); cx.moveTo(p.x, p.y); e.preventDefault(); });
+            cvs.addEventListener('touchmove', e => { if (!dibujando) return; let p = pos(e); cx.lineTo(p.x, p.y); cx.stroke(); e.preventDefault(); });
+            cvs.addEventListener('touchend', () => dibujando = false);
+        }
+
+        function limpiarPizarra() {
+            let canvas = document.getElementById('pizarra');
+            if (!canvas) return;
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Números
+        let numActual = 1, bloqueadoNum = false;
+        let qNum = { 1: 'Shuk', 2: 'Iskay', 3: 'Kimsa' };
+
+        function nuevaRondaNumeros() {
+            bloqueadoNum = false;
+            numActual = Math.floor(Math.random() * 3) + 1;
+            document.getElementById('estrellas-display').innerText = '⭐'.repeat(numActual);
+            document.getElementById('feedback-num').innerText = '';
+        }
+
+        function verificarNumero(n) {
+            if (bloqueadoNum) return;
+            let fb = document.getElementById('feedback-num');
+            if (n === numActual) {
+                bloqueadoNum = true;
+                fb.style.color = '#00b894';
+                fb.innerText = `🎉 ¡Allillanchmi! (${qNum[numActual]}) 🌟`;
+                setTimeout(nuevaRondaNumeros, 1500);
+            } else {
+                fb.style.color = '#ff7675';
+                fb.innerText = '❌ ¡Inténtalo otra vez!';
+            }
+        }
+    </script>
+</body>
+</html>
